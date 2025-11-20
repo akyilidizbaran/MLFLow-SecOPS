@@ -1,4 +1,4 @@
 [core]
     remote = origin
 ['remote "origin"']
-    url = ../../dvc-storage
+    url = C:\dvc-storage

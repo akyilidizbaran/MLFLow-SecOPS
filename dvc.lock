@@ -1,0 +1,42 @@
+schema: '2.0'
+stages:
+  download:
+    cmd: python app/src/download_data.py
+    deps:
+    - path: app/src/download_data.py
+      hash: md5
+      md5: f285b74b8eb402d383dd6e970185bdf6
+      size: 6324
+    - path: params.yaml
+      hash: md5
+      md5: bb5b4ed18220141afc4fab358d1ea280
+      size: 1229
+    outs:
+    - path: data/raw/kaggle_raw.csv
+      hash: md5
+      md5: f2906818eda8fcfc8f8416557ab1e6df
+      size: 23873
+  train:
+    cmd: python app/src/train.py
+    deps:
+    - path: app/src/train.py
+      hash: md5
+      md5: 49c604363c0e638926d4a883c4ab032f
+      size: 4956
+    - path: data/raw/kaggle_raw.csv
+      hash: md5
+      md5: f2906818eda8fcfc8f8416557ab1e6df
+      size: 23873
+    - path: params.yaml
+      hash: md5
+      md5: bb5b4ed18220141afc4fab358d1ea280
+      size: 1229
+    outs:
+    - path: metrics.json
+      hash: md5
+      md5: 83885cb902451ed28b76cd7a41c876c1
+      size: 65
+    - path: models/model.pkl
+      hash: md5
+      md5: 8799bf9c10065590aad5a2c0a666ff95
+      size: 424489
