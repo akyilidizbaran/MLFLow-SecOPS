@@ -109,7 +109,7 @@ pipeline {
                     git remote set-url origin https://%GIT_USERNAME%:%GIT_PASSWORD%@github.com/akyilidizbaran/MLFLow-SecOPS.git
 
                     echo [GIT] main branch push ediliyor...
-                    git push origin main || echo "Push başarısız oldu, loga bak."
+                    git push origin HEAD:main || echo "Push başarısız oldu, loga bak."
                     '''
                 }
             }

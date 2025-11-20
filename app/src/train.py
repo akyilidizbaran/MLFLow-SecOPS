@@ -117,7 +117,7 @@ def main() -> None:
 
     # MLflow ayarları
     tracking_uri = os.getenv("MLFLOW_TRACKING_URI", "http://mlflow:5000")
-    mlflow.set_tracking_uri(tracking_uri)
+    mlflow.set_tracking_uri("file:./mlruns")
 
     # Basit bir deney adı belirliyoruz.
     experiment_name = "demo-mlops-pipeline"
