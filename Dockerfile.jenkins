@@ -1,0 +1,20 @@
+FROM jenkins/jenkins:lts-jdk17
+
+# Root yetkisine geçiyoruz; sistem paketlerini kuracağız.
+USER root
+
+# Python, pip, venv ve git kurulumunu yap
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    python3 \
+    python3-pip \
+    python3-venv \
+    git \
+    && rm -rf /var/lib/apt/lists/*
+
+# Böylece Jenkins pipeline adımlarında doğrudan dvc ve mlflow komutlarını kullanabiliriz.
+# PEP 668 (externally-managed-environment) nedeniyle --break-system-packages kullanıyoruz.
+RUN python3 -m pip install --no-cache-dir --break-system-packages "dvc[all]" mlflow
+
+
+# Tekrar jenkins kullanıcısına dön
+USER jenkins

@@ -14,10 +14,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     git \
  && rm -rf /var/lib/apt/lists/*
 
-# Python paketleri: DVC ve MLflow.
-# Böylece Jenkins pipeline adımlarında doğrudan dvc ve mlflow komutlarını kullanabiliriz.
-RUN python3 -m pip install --no-cache-dir --upgrade pip \
- && pip3 install --no-cache-dir dvc[all] mlflow
+RUN python3 -m pip install --no-cache-dir --break-system-packages "dvc[all]" mlflow
 
 # İşlemler bittikten sonra tekrar jenkins kullanıcısına dönüyoruz.
 USER jenkins
