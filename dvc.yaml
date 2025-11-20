@@ -1,0 +1,24 @@
+# Bu dosya, DVC pipeline aşamalarını tanımlar.
+# "download" aşaması Kaggle'dan veri setini indirir.
+# "train" aşaması bu veriyi kullanarak modeli eğitir ve metrikleri hesaplar.
+# `dvc repro` komutu, bu iki aşamayı bağımlılık sırasına göre otomatik çalıştırır.
+
+stages:
+  download:
+    cmd: python app/src/download_data.py
+    deps:
+      - app/src/download_data.py
+      - params.yaml
+    outs:
+      - data/raw/kaggle_raw.csv
+
+  train:
+    cmd: python app/src/train.py
+    deps:
+      - app/src/train.py
+      - data/raw/kaggle_raw.csv
+      - params.yaml
+    outs:
+      - models/model.pkl
+      - metrics.json
+

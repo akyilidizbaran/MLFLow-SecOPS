@@ -1,0 +1,31 @@
+# Bu imaj, hafif bir Python 3.11 ortamı sağlar.
+# MLflow sunucusunu çalıştırmak için temel olarak kullanıyoruz.
+FROM python:3.11-slim
+
+# Sistem paketlerini güncelle ve ihtiyacımız olan araçları kur.
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    build-essential \
+ && rm -rf /var/lib/apt/lists/*
+
+# MLflow paketini kuruyoruz.
+RUN pip install --no-cache-dir mlflow
+
+# Uygulama dosyaları için çalışma dizini.
+WORKDIR /app
+
+# MLflow deney sonuçları ve artefaktları için ayrı bir klasör.
+# Bu klasöre host makineden volume bağlayacağız.
+RUN mkdir -p /mlruns
+
+# MLflow sunucusu bu portu kullanır.
+EXPOSE 5000
+
+# Varsayılan komut olarak bash açıyoruz.
+# Gerçek MLflow komutunu docker-compose içinde override edeceğiz.
+CMD ["bash"]
+
+# Not:
+# - MLflow sunucusu, deneyleri ve model versiyonlarını takip eder.
+# - Bu konteyner sadece MLflow web arayüzünü ve backend'ini çalıştırmak için kullanılır.
+# - Gerçek eğitim işlemleri app konteynerinde yapılır ve MLflow'a loglanır.
+

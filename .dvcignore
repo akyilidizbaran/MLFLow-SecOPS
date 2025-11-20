@@ -1,0 +1,5 @@
+# Bu dosya, DVC'nin takip etmesini istemediğimiz dosya ve klasörleri listeler.
+# Örneğin MLflow çıktılarını veya geçici log dosyalarını burada belirtebiliriz.
+
+mlruns/
+

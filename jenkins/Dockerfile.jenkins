@@ -1,0 +1,29 @@
+# Bu imaj, Jenkins CI sunucusunu çalıştırmak için kullanılır.
+# Üzerine Python, DVC ve MLflow ekleyerek MLOps pipeline'ını çalıştırabilecek hale getiriyoruz.
+FROM jenkins/jenkins:lts-jdk17
+
+# Jenkins imajı varsayılan olarak "jenkins" kullanıcısı ile gelir.
+# Sistem paketleri kurmak için geçici olarak root kullanıcısına geçiyoruz.
+USER root
+
+# Gerekli sistem araçlarını kuruyoruz: python3, pip ve git.
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    python3 \
+    python3-pip \
+    python3-venv \
+    git \
+ && rm -rf /var/lib/apt/lists/*
+
+# Python paketleri: DVC ve MLflow.
+# Böylece Jenkins pipeline adımlarında doğrudan dvc ve mlflow komutlarını kullanabiliriz.
+RUN python3 -m pip install --no-cache-dir --upgrade pip \
+ && pip3 install --no-cache-dir dvc[all] mlflow
+
+# İşlemler bittikten sonra tekrar jenkins kullanıcısına dönüyoruz.
+USER jenkins
+
+# Not:
+# - Bu Jenkins imajı içinde hem Jenkins master hem de build ajanı çalışır.
+# - Pipeline adımlarında 'sh' ile çalıştırılan komutlar bu konteyner içinde koşacaktır.
+# - Bu yüzden Python, DVC ve MLflow'u burada kurduk.
+

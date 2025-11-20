@@ -1,0 +1,60 @@
+version: "3.9"
+
+services:
+  mlflow:
+    build:
+      context: ./mlflow
+      dockerfile: Dockerfile.mlflow
+    container_name: mlflow-server
+    ports:
+      - "5000:5000"
+    volumes:
+      - ./mlruns:/mlruns
+    working_dir: /app
+    command: >
+      mlflow server
+      --host 0.0.0.0
+      --port 5000
+      --backend-store-uri sqlite:///mlflow.db
+      --default-artifact-root /mlruns
+
+  app:
+    build:
+      context: ./app
+      dockerfile: Dockerfile.app
+    container_name: mlops-app
+    depends_on:
+      - mlflow
+    environment:
+      - MLFLOW_TRACKING_URI=http://mlflow:5000
+      - PYTHONUNBUFFERED=1
+    working_dir: /app
+    volumes:
+      - ./app/src:/app/src
+      - ./data:/app/data
+      - ./models:/app/models
+      - ./params.yaml:/app/params.yaml
+      - ./dvc.yaml:/app/dvc.yaml
+      # Bu satır, host makinedeki .kaggle klasörünü (içinde kaggle.json var)
+      # konteyner içindeki /root/.kaggle yoluna sadece-okunur olarak mount eder.
+      # Böylece Kaggle API, kaggle.json dosyasını otomatik bularak kimlik doğrulaması yapabilir.
+      - C:/Users/Baran/.kaggle:/root/.kaggle:ro
+    command: ["python", "src/train.py"]
+
+  jenkins:
+    build:
+      context: ./jenkins
+      dockerfile: Dockerfile.jenkins
+    container_name: jenkins-ci
+    ports:
+      - "8080:8080"
+      - "50000:50000"
+    environment:
+      - JAVA_OPTS=-Djenkins.install.runSetupWizard=false
+      - MLFLOW_TRACKING_URI=http://mlflow:5000
+    volumes:
+      - jenkins_home:/var/jenkins_home
+
+volumes:
+  jenkins_home:
+

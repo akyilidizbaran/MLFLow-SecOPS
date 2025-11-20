@@ -1,0 +1,28 @@
+# Bu dosya eğitimde kullanılacak hiperparametreleri ve Kaggle veri seti ayarlarını tutar.
+# Varsayılan olarak Pima Indians Diabetes veri seti kullanılır:
+#   Kaggle dataset: uciml/pima-indians-diabetes-database
+#   Dosya adı: diabetes.csv
+#
+# `kaggle.dataset`:
+#   Kaggle üzerindeki veri seti adresini (owner/dataset-slug) belirtir.
+# `kaggle.file`:
+#   İndirilecek asıl dosyanın adını belirtir (örneğin CSV dosyası).
+#
+# `train.target_column`:
+#   Veri setindeki hedef kolonu belirtir. Pima Indians Diabetes veri setinde bu kolon "Outcome" olarak geçer.
+#
+# Not:
+#   Daha sonra farklı bir Kaggle veri seti kullanmak isterseniz
+#   `kaggle.dataset`, `kaggle.file` ve `train.target_column` değerlerini değiştirmeniz yeterlidir.
+
+kaggle:
+  dataset: "uciml/pima-indians-diabetes-database"
+  file: "diabetes.csv"
+
+train:
+  test_size: 0.2          # Eğitim/test oranı (örneğin %20 test)
+  random_state: 42        # Rastgelelik için sabit tohum (tekrar üretilebilirlik)
+  n_estimators: 100       # RandomForest için ağaç sayısı
+  max_depth: 5            # Ağaçların maksimum derinliği
+  target_column: "Outcome"  # Pima Indians Diabetes veri setindeki hedef kolon adı
+

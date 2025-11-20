@@ -1,0 +1,11 @@
+# Bu dosya, eğitim uygulaması için gerekli Python paketlerini listeler.
+# Jenkins ve Docker ortamında bu dosya kullanılarak bağımlılıklar kurulur.
+
+mlflow
+dvc[all]
+pandas
+scikit-learn
+pyyaml
+joblib
+kaggle
+

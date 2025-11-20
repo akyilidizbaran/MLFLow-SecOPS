@@ -1,0 +1,26 @@
+﻿# Ignore Python cache and compiled files
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Virtual environments
+.venv/
+.env/
+
+# DVC cache and temporary files
+.dvc/cache/
+.dvc/tmp/
+
+# MLflow local runs directory
+mlruns/
+
+# Data, models and metrics that are reproduced by DVC
+data/raw/
+models/
+metrics.json
+
+# IDE / editor / OS-specific files
+.vscode/
+.idea/
+.DS_Store
