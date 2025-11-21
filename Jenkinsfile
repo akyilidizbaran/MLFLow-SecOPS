@@ -101,7 +101,7 @@ pipeline {
 
                     echo [GIT] dvc.lock ve .dvc/config commit'e ekleniyor (varsa)...
                     REM -f parametresi (force) gitignore kuralini ezer ve dosyalari zorla ekler
-                    git add -f dvc.lock .dvc\config reports\*.txt
+                    git add -f dvc.lock .dvc/config reports/*.txt
 
                     echo [GIT] Commit denemesi...
                     git commit -m "CI: Update DVC lockfile" || echo "Commitlenecek değişiklik yok."
