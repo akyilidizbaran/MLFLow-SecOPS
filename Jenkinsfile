@@ -16,20 +16,20 @@ pipeline {
         stage('Python ve Bağımlılıkları Kur') {
             steps {
                 bat '''
-                echo [PY] Sanal ortam oluşturuluyor...
+                echo [PY] Sanal ortam olusturuluyor...
                 python -m venv .venv
 
                 echo [PY] Sanal ortam aktif ediliyor...
                 call .venv\\Scripts\\activate
 
-                echo [PY] Bağımlılıklar kuruluyor...
+                echo [PY] Bagimliliklar kuruluyor...
                 pip install --upgrade pip
                 pip install -r app\\requirements.txt
                 '''
             }
         }
 
-        stage('DVC ile Kaggle İndir + Eğitim') {
+        stage('DVC ile Kaggle Indir + Egitim') {
             steps {
                 withCredentials([
                     string(credentialsId: 'kaggle-username-id', variable: 'KAGGLE_USERNAME'),
@@ -39,14 +39,14 @@ pipeline {
                     echo [DVC] Sanal ortam aktif ediliyor...
                     call .venv\\Scripts\\activate
 
-                    echo [DVC] Kaggle env değişkenleri ayarlanıyor...
+                    echo [DVC] Kaggle env degiskenleri ayarlaniyor...
                     set KAGGLE_USERNAME=%KAGGLE_USERNAME%
                     set KAGGLE_KEY=%KAGGLE_KEY%
 
-                    echo [DVC] Pipeline (download + train) çalıştırılıyor...
+                    echo [DVC] Pipeline (download + train) calistiriliyor...
                     dvc repro
 
-                    echo [DVC] Metrikler gösteriliyor...
+                    echo [DVC] Metrikler gosteriliyor...
                     dvc metrics show
                     '''
                 }
@@ -58,23 +58,24 @@ pipeline {
                 bat '''
                 echo Starting Security Scan...
 
-                echo [ENV] Kullanıcı profili çalışma alanına yönlendiriliyor...
+                echo [ENV] Kullanici profili calisma alanina yonlendiriliyor...
                 set USERPROFILE=%WORKSPACE%
                 set HF_HOME=%WORKSPACE%\\.cache\\huggingface
                 set TORCH_HOME=%WORKSPACE%\\.cache\\torch
 
                 call .venv\\Scripts\\activate
+                if not exist .local\\share\\garak\\garak_runs\\reports mkdir .local\\share\\garak\\garak_runs\\reports
                 if not exist reports mkdir reports
 
-                echo [GARAK] Yerel GPT-2 modeli ile tarama başlıyor...
+                echo [GARAK] Yerel GPT-2 modeli ile tarama basliyor...
                 python -m garak --model_type huggingface --model_name gpt2 --probes encoding --report_prefix reports/garak_report || echo "Garak found vulnerabilities..."
 
-                echo [SUMMARY] Tarih/Saat ve DVC durum raporu hazırlanıyor...
+                echo [SUMMARY] Tarih/Saat ve DVC durum raporu hazirlaniyor...
                 echo Tarih/Saat: %DATE% %TIME% > reports/pipeline_summary.txt
                 echo DVC Status: >> reports/pipeline_summary.txt
                 dvc status >> reports/pipeline_summary.txt 2>&1
 
-                echo [DEBUG] reports klasörü içeriği:
+                echo [DEBUG] reports klasoru icerigi:
                 dir reports
 
                 echo Scan complete.
@@ -91,7 +92,7 @@ pipeline {
                 echo [DVC] DVC durumu:
                 dvc status || echo "DVC status hata verdi."
 
-                echo [DVC] DVC push ile artefaktlar remote'a gönderiliyor...
+                echo [DVC] DVC push ile artefaktlar remote'a gonderiliyor...
                 dvc push
                 '''
             }
@@ -109,14 +110,14 @@ pipeline {
                     usernamePassword(credentialsId: 'git-credentials-id', usernameVariable: 'GIT_USERNAME', passwordVariable: 'GIT_PASSWORD')
                 ]) {
                     bat '''
-                    echo [GIT] Kullanıcı bilgisi ayarlanıyor...
+                    echo [GIT] Kullanici bilgisi ayarlaniyor...
                     git config user.email "ci-bot@example.com"
                     git config user.name "jenkins-bot"
 
-                    echo [GIT] reports klasörü kontrol ediliyor...
+                    echo [GIT] reports klasoru kontrol ediliyor...
                     dir reports
 
-                    echo [GIT] dvc.lock, .dvc/config ve reports klasörü commit'e ekleniyor...
+                    echo [GIT] dvc.lock, .dvc/config ve reports klasoru commit'e ekleniyor...
                     git add -f dvc.lock .dvc/config
                     git add -f reports/
 
@@ -126,11 +127,11 @@ pipeline {
                     echo [GIT] Commit denemesi...
                     git commit -m "CI: Add Security Reports and DVC Lock" || echo "Nothing to commit"
 
-                    echo [GIT] Remote URL PAT ile güncelleniyor...
+                    echo [GIT] Remote URL PAT ile guncelleniyor...
                     git remote set-url origin https://%GIT_USERNAME%:%GIT_PASSWORD%@github.com/akyilidizbaran/MLFLow-SecOPS.git
 
                     echo [GIT] main branch push ediliyor...
-                    git push origin HEAD:main || echo "Push başarısız oldu, loga bak."
+                    git push origin HEAD:main || echo "Push basarisiz oldu, loga bak."
                     '''
                 }
             }
@@ -140,19 +141,20 @@ pipeline {
     post {
         always {
             bat '''
-            echo [POST] Son durum raporu alınıyor...
+            echo [POST] Son durum raporu aliniliyor...
 
             if exist .venv\\Scripts\\activate (
                 call .venv\\Scripts\\activate
                 echo [POST] dvc status:
-                dvc status || echo "dvc status post aşamasında hata verdi."
+                dvc status || echo "dvc status post asamasinda hata verdi."
             ) else (
-                echo [POST] .venv bulunamadı, dvc status atlanıyor.
+                echo [POST] .venv bulunamadi, dvc status atlanıyor.
             )
 
             echo [POST] Son commit:
-            git log -1 --oneline || echo "Git log okunamadı."
+            git log -1 --oneline || echo "Git log okunamadi."
             '''
         }
     }
 }
+
