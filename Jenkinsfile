@@ -57,11 +57,17 @@ pipeline {
             steps {
                 bat '''
                 echo Starting Security Scan...
+
+                echo [ENV] Kullanıcı profili çalışma alanına yönlendiriliyor...
+                set USERPROFILE=%WORKSPACE%
+                set HF_HOME=%WORKSPACE%\\.cache\\huggingface
+                set TORCH_HOME=%WORKSPACE%\\.cache\\torch
+
                 call .venv\\Scripts\\activate
                 if not exist reports mkdir reports
 
                 echo [GARAK] Yerel GPT-2 modeli ile tarama başlıyor...
-                python -m garak --model_type huggingface --model_name gpt2 --probes encoding --report_prefix reports/garak_report || ver > nul
+                python -m garak --model_type huggingface --model_name gpt2 --probes encoding --report_prefix reports/garak_report || echo "Garak found vulnerabilities..."
 
                 echo [SUMMARY] Tarih/Saat ve DVC durum raporu hazırlanıyor...
                 echo Tarih/Saat: %DATE% %TIME% > reports/pipeline_summary.txt
