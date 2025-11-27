@@ -8,4 +8,9 @@ scikit-learn
 pyyaml
 joblib
 kaggle
+bandit
+safety
+garak
+transformers
+torch
 

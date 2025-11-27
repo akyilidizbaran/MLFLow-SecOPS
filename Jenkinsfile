@@ -2,7 +2,7 @@ pipeline {
     agent any
 
     environment {
-        // MLflow server zaten docker'da 5000 portunda çalışıyor
+        // MLflow server docker ortamında 5000 portunda çalışıyor
         MLFLOW_TRACKING_URI = "http://127.0.0.1:5000"
     }
 
@@ -31,8 +31,6 @@ pipeline {
 
         stage('DVC ile Kaggle İndir + Eğitim') {
             steps {
-                // Kaggle credential'ları Secret Text olarak eklediğini varsayıyorum:
-                // ID'ler: kaggle-username-id, kaggle-key-id
                 withCredentials([
                     string(credentialsId: 'kaggle-username-id', variable: 'KAGGLE_USERNAME'),
                     string(credentialsId: 'kaggle-key-id', variable: 'KAGGLE_KEY')
@@ -55,11 +53,25 @@ pipeline {
             }
         }
 
-        stage('MLSecOps Denetimi (Şablon)') {
+        stage('MLSecOps Denetimi (Garak & LLM)') {
             steps {
                 bat '''
-                echo [MLSecOps] Buraya OWASP Top 10 ve MITRE ATLAS kontrollerini ekleyeceksin.
-                echo [MLSecOps] Örn: model artifact taraması, dependency taraması, config hardening vb.
+                echo Starting Security Scan...
+                call .venv\\Scripts\\activate
+                if not exist reports mkdir reports
+
+                echo [GARAK] Yerel GPT-2 modeli ile tarama başlıyor...
+                python -m garak --model_type huggingface --model_name gpt2 --probes encoding --report_prefix reports/garak_report || ver > nul
+
+                echo [SUMMARY] Tarih/Saat ve DVC durum raporu hazırlanıyor...
+                echo Tarih/Saat: %DATE% %TIME% > reports/pipeline_summary.txt
+                echo DVC Status: >> reports/pipeline_summary.txt
+                dvc status >> reports/pipeline_summary.txt 2>&1
+
+                echo [DEBUG] reports klasörü içeriği:
+                dir reports
+
+                echo Scan complete.
                 '''
             }
         }
@@ -71,7 +83,7 @@ pipeline {
                 call .venv\\Scripts\\activate
 
                 echo [DVC] DVC durumu:
-                dvc status || echo "DVC status hata verdi (önemliyse loga bak)."
+                dvc status || echo "DVC status hata verdi."
 
                 echo [DVC] DVC push ile artefaktlar remote'a gönderiliyor...
                 dvc push
@@ -81,13 +93,12 @@ pipeline {
 
         stage('Artefaktları Arşivle') {
             steps {
-                archiveArtifacts artifacts: 'metrics.json, dvc.lock, models/model.pkl', onlyIfSuccessful: true
+                archiveArtifacts artifacts: 'models/*.pkl, metrics.json, reports/*.*', fingerprint: true
             }
         }
 
         stage('Git Push (CI Sonrası)') {
             steps {
-                // Git için Jenkins credentials: git-credentials-id (Username with password / PAT)
                 withCredentials([
                     usernamePassword(credentialsId: 'git-credentials-id', usernameVariable: 'GIT_USERNAME', passwordVariable: 'GIT_PASSWORD')
                 ]) {
@@ -96,15 +107,18 @@ pipeline {
                     git config user.email "ci-bot@example.com"
                     git config user.name "jenkins-bot"
 
-                    echo [GIT] Değişiklik var mı?
+                    echo [GIT] reports klasörü kontrol ediliyor...
+                    dir reports
+
+                    echo [GIT] dvc.lock, .dvc/config ve reports klasörü commit'e ekleniyor...
+                    git add -f dvc.lock .dvc/config
+                    git add -f reports/
+
+                    echo [GIT] Git status:
                     git status
 
-                    echo [GIT] dvc.lock ve .dvc/config commit'e ekleniyor (varsa)...
-                    REM -f parametresi (force) gitignore kuralini ezer ve dosyalari zorla ekler
-                    git add -f dvc.lock .dvc/config reports/
-
                     echo [GIT] Commit denemesi...
-                    git commit -m "CI: Update DVC lockfile" || echo "Commitlenecek değişiklik yok."
+                    git commit -m "CI: Add Security Reports and DVC Lock" || echo "Nothing to commit"
 
                     echo [GIT] Remote URL PAT ile güncelleniyor...
                     git remote set-url origin https://%GIT_USERNAME%:%GIT_PASSWORD%@github.com/akyilidizbaran/MLFLow-SecOPS.git
