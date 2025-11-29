@@ -70,6 +70,9 @@ pipeline {
                 echo [GARAK] Yerel distilgpt2 modeli ile hizli tarama basliyor...
                 python -m garak --model_type huggingface --model_name distilgpt2 --probes encoding.InjectBase64 --generations 10 --report_prefix reports/garak_report || echo "Garak found vulnerabilities..."
 
+                echo [COPY] Garak raporlari workspace altina kopyalaniyor...
+                xcopy /s /y %USERPROFILE%\\.local\\share\\garak\\garak_runs\\reports\\*.* reports\\
+
                 echo [SUMMARY] Tarih/Saat ve DVC durum raporu hazirlaniyor...
                 echo Tarih/Saat: %DATE% %TIME% > reports/pipeline_summary.txt
                 echo DVC Status: >> reports/pipeline_summary.txt
