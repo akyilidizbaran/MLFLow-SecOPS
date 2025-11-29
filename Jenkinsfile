@@ -67,8 +67,8 @@ pipeline {
                 if not exist .local\\share\\garak\\garak_runs\\reports mkdir .local\\share\\garak\\garak_runs\\reports
                 if not exist reports mkdir reports
 
-                echo [GARAK] Yerel GPT-2 modeli ile tarama basliyor...
-                python -m garak --model_type huggingface --model_name gpt2 --probes encoding --report_prefix reports/garak_report || echo "Garak found vulnerabilities..."
+                echo [GARAK] Yerel distilgpt2 modeli ile hizli tarama basliyor...
+                python -m garak --model_type huggingface --model_name distilgpt2 --probes encoding.InjectBase64 --generations 10 --report_prefix reports/garak_report || echo "Garak found vulnerabilities..."
 
                 echo [SUMMARY] Tarih/Saat ve DVC durum raporu hazirlaniyor...
                 echo Tarih/Saat: %DATE% %TIME% > reports/pipeline_summary.txt
@@ -157,4 +157,3 @@ pipeline {
         }
     }
 }
-
