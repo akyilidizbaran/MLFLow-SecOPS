@@ -15,4 +15,5 @@ transformers
 torch
 cyclonedx-bom
 fairlearn
+giskard
 cyclonedx-bom

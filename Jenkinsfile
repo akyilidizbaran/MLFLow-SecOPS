@@ -65,6 +65,18 @@ pipeline {
             }
         }
 
+        stage('Model Kalite Testleri (Giskard)') {
+            steps {
+                bat '''
+                echo Giskard ile model kalite testleri baslatiliyor...
+                call .venv\\Scripts\\activate
+                if not exist reports\\quality mkdir reports\\quality
+                python app/src/test_model.py
+                echo Giskard raporu reports/quality/giskard_report.html konumuna kaydedildi.
+                '''
+            }
+        }
+
         stage('MLSecOps Denetimi (Garak & LLM)') {
             steps {
                 bat '''
