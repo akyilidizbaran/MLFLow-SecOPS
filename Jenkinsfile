@@ -78,7 +78,7 @@ pipeline {
                 bat '''
                 echo Giskard ile model kalite testleri baslatiliyor...
                 call .venv\\Scripts\\activate
-                pip install griffe scipy
+                pip install "griffe==0.48.0" scipy
                 if not exist reports\\quality mkdir reports\\quality
                 python app/src/test_model.py
                 echo Giskard raporu reports/quality/giskard_report.html konumuna kaydedildi.
@@ -89,11 +89,11 @@ pipeline {
         stage('Yonetisim ve Uyumluluk (Credo AI)') {
             steps {
                 bat '''
-                echo Credo AI ile yonetisim raporu hazirlaniyor...
+                echo Yonetisim raporu (Governance) olusturuluyor...
                 call .venv\\Scripts\\activate
                 if not exist reports\\governance mkdir reports\\governance
                 python app/src/governance.py
-                echo Yonetisim raporu reports/governance/credo_report.html konumuna kaydedildi.
+                echo Rapor tamamlandi: reports/governance/credo_report.html
                 '''
             }
         }
