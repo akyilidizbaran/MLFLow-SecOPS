@@ -1,3 +1,3 @@
-Tarih/Saat: Cmt 29.11.2025 16:13:03,08 
+Tarih/Saat: Pzt 08.12.2025 17:22:35,66 
 DVC Status: 
-Data and pipelines are up to date.
+ERROR: interrupted by the user
