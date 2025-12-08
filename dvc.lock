@@ -34,9 +34,9 @@ stages:
     outs:
     - path: metrics.json
       hash: md5
-      md5: 83885cb902451ed28b76cd7a41c876c1
-      size: 65
+      md5: 92a2589dbd45f26a9aa39e47abfda882
+      size: 77
     - path: models/model.pkl
       hash: md5
-      md5: 8799bf9c10065590aad5a2c0a666ff95
-      size: 424489
+      md5: 51167c6ae2e5ee0f3eab39c7ca947b6b
+      size: 418096
