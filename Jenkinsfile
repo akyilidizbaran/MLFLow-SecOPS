@@ -35,7 +35,7 @@ pipeline {
                 echo SBOM (Software Bill of Materials) olusturuluyor...
                 call .venv\\Scripts\\activate
                 if not exist reports mkdir reports
-                cyclonedx-py environment --output-format json --outfile reports/bom.json
+                cyclonedx-py environment --output-format json > reports/bom.json
                 echo SBOM reports/bom.json dosyasina kaydedildi.
                 '''
             }
@@ -172,4 +172,3 @@ pipeline {
         }
     }
 }
-
