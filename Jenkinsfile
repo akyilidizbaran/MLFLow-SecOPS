@@ -63,11 +63,15 @@ pipeline {
                     set KAGGLE_USERNAME=%KAGGLE_USERNAME%
                     set KAGGLE_KEY=%KAGGLE_KEY%
 
-                    echo [DVC] Pipeline (download + train) calistiriliyor...
-                    dvc repro
+                    echo [DVC] Pipeline (download + train) ZORLA calistiriliyor...
+                    dvc repro --force
 
                     echo [DVC] Metrikler gosteriliyor...
                     dvc metrics show
+
+                    echo [DVC] Model dosyasi kontrol ediliyor...
+                    if exist models\\model.pkl (echo Model dosyasi MEVCUT.) else (echo Model dosyasi YOK! Hata!)
+                    dir models
                     '''
                 }
             }
@@ -78,6 +82,8 @@ pipeline {
                 bat '''
                 echo Giskard ile model kalite testleri baslatiliyor...
                 call .venv\\Scripts\\activate
+                echo [GISKARD] Model dosya yolu kontrolu...
+                dir models
                 pip install "numpy<2.0" "scipy<1.14" "griffe==0.48.0"
                 if not exist reports\\quality mkdir reports\\quality
                 python app/src/test_model.py
