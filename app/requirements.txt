@@ -19,3 +19,4 @@ giskard
 cyclonedx-bom
 scipy
 griffe
+credoai-lens
