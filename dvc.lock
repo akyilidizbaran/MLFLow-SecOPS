@@ -21,8 +21,8 @@ stages:
     deps:
     - path: app/src/train.py
       hash: md5
-      md5: 4ad697ab33c4760bd56d867763622376
-      size: 4959
+      md5: b72908c0a2cd8be0ba54eee39a334104
+      size: 6209
     - path: data/raw/kaggle_raw.csv
       hash: md5
       md5: f2906818eda8fcfc8f8416557ab1e6df
