@@ -52,11 +52,13 @@ def main():
         classification_labels=sorted(y.unique().tolist()),
     )
 
+    # Giskard Dataset'i oluşturuyoruz.
+    # feature_names parametresi kaldırıldı (DataFrame'den otomatik okunur).
     wrapped_dataset = Dataset(
         df=df_sample,
         target="Outcome",
-        feature_names=feature_cols,
-        column_types=None,
+        cat_columns=[],  # Pima datasetinde kategorik kolon yok, hepsi sayisal
+        name="Pima Indians Diabetes Test Set"
     )
 
     print("Giskard taraması başlatılıyor...")
@@ -74,4 +76,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-

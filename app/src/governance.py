@@ -1,113 +1,71 @@
-"""
-MLOps Governance Report (Credo AI Simulation).
-
-- Aggregates key artifacts (metrics, SBOM, fairness, security) and emits a simple HTML report.
-"""
-from __future__ import annotations
-
 import json
+import os
 from pathlib import Path
-from typing import Dict, Any
 
 
-BASE_DIR = Path(__file__).resolve().parent.parent
-REPORTS_DIR = BASE_DIR / "reports"
-GOV_DIR = REPORTS_DIR / "governance"
+def main():
+    # Yollar
+    metrics_path = Path("metrics.json")
+    sbom_path = Path("reports/sbom/bom.json")
+    fairness_path = Path("reports/fairness/fairness_report.txt")
+    giskard_path = Path("reports/quality/giskard_report.html")
+    garak_path = Path("reports/security/garak_report.report.html")
 
-METRICS_PATH = BASE_DIR / "metrics.json"
-SBOM_PATH = REPORTS_DIR / "sbom" / "bom.json"
-FAIRNESS_PATH = REPORTS_DIR / "fairness" / "fairness_report.txt"
-GISKARD_PATH = REPORTS_DIR / "quality" / "giskard_report.html"
-GARAK_PATH = REPORTS_DIR / "security" / "garak_report.report.html"
-OUTPUT_HTML = GOV_DIR / "credo_report.html"
+    output_path = Path("reports/governance/credo_report.html")
+    output_path.parent.mkdir(parents=True, exist_ok=True)
 
+    # 1. Performans Kontrolü
+    metrics = {}
+    if metrics_path.exists():
+        with open(metrics_path, 'r') as f:
+            metrics = json.load(f)
 
-def load_json(path: Path) -> Dict[str, Any]:
-    if not path.exists():
-        return {}
-    try:
-        with path.open("r", encoding="utf-8") as f:
-            return json.load(f)
-    except Exception:
-        return {}
+    acc = metrics.get("accuracy", 0)
+    f1 = metrics.get("f1_score", 0)
 
+    # 2. Uyumluluk Kontrolleri
+    has_sbom = "✅ MEVCUT" if sbom_path.exists() else "❌ EKSIK"
+    has_fairness = "✅ MEVCUT" if fairness_path.exists() else "❌ EKSIK"
+    has_giskard = "✅ MEVCUT" if giskard_path.exists() else "❌ EKSIK"
+    has_garak = "✅ MEVCUT" if garak_path.exists() else "❌ EKSIK"
 
-def render_html(metrics: Dict[str, Any], statuses: Dict[str, str], decision: str) -> str:
-    acc = metrics.get("accuracy", "N/A")
-    f1 = metrics.get("f1", metrics.get("f1_score", "N/A"))
+    # 3. Karar Mantığı
+    decision = "ONAYLANDI" if (acc > 0.6 and has_sbom == "✅ MEVCUT") else "INCELENMELI"
+    color = "green" if decision == "ONAYLANDI" else "red"
 
-    status_rows = ""
-    for k, v in statuses.items():
-        status_rows += f"<tr><td>{k}</td><td>{v}</td></tr>"
+    # 4. HTML Raporu
+    html_content = f"""
+    <html>
+    <head><title>MLSecOps Yonetisim Raporu</title></head>
+    <body style="font-family: Arial, sans-serif; padding: 20px;">
+        <h1>MLSecOps Yonetisim Raporu (Simulasyon)</h1>
+        <hr>
+        <h2 style="color: {color};">KARAR: {decision}</h2>
 
-    return f"""
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>MLOps Governance Report (Credo AI Simulation)</title>
-    <style>
-        body {{ font-family: Arial, sans-serif; margin: 20px; }}
-        h1 {{ color: #2c3e50; }}
-        table {{ border-collapse: collapse; width: 100%; margin: 12px 0; }}
-        th, td {{ border: 1px solid #ccc; padding: 8px; text-align: left; }}
-        th {{ background: #f4f6f8; }}
-        .section {{ margin-bottom: 20px; }}
-    </style>
-</head>
-<body>
-    <h1>MLOps Governance Report (Credo AI Simulation)</h1>
+        <h3>1. Model Performansi</h3>
+        <ul>
+            <li>Accuracy: {acc:.4f}</li>
+            <li>F1 Score: {f1:.4f}</li>
+        </ul>
 
-    <div class="section">
-        <h2>Model Performance</h2>
-        <table>
-            <tr><th>Metric</th><th>Value</th></tr>
-            <tr><td>Accuracy</td><td>{acc}</td></tr>
-            <tr><td>F1</td><td>{f1}</td></tr>
+        <h3>2. Uyumluluk Kontrol Listesi</h3>
+        <table border="1" cellpadding="10" style="border-collapse: collapse;">
+            <tr><th>Kontrol</th><th>Durum</th></tr>
+            <tr><td>Tedarik Zinciri (SBOM)</td><td>{has_sbom}</td></tr>
+            <tr><td>Adillik Testi (Fairness)</td><td>{has_fairness}</td></tr>
+            <tr><td>Kalite Testi (Giskard)</td><td>{has_giskard}</td></tr>
+            <tr><td>Guvenlik Taramasi (Garak)</td><td>{has_garak}</td></tr>
         </table>
-    </div>
 
-    <div class="section">
-        <h2>Compliance Checklist</h2>
-        <table>
-            <tr><th>Artifact</th><th>Status</th></tr>
-            {status_rows}
-        </table>
-    </div>
+        <p><small>Rapor Olusturma Tarihi: Otomatik</small></p>
+    </body>
+    </html>
+    """
 
-    <div class="section">
-        <h2>Governance Decision</h2>
-        <p>{decision}</p>
-    </div>
-</body>
-</html>
-""".strip()
+    with open(output_path, "w", encoding="utf-8") as f:
+        f.write(html_content)
 
-
-def main() -> None:
-    GOV_DIR.mkdir(parents=True, exist_ok=True)
-
-    metrics = load_json(METRICS_PATH)
-    accuracy = metrics.get("accuracy")
-    sbom_exists = SBOM_PATH.exists()
-
-    statuses = {
-        "SBOM": "✅ Found" if sbom_exists else "❌ Missing",
-        "Fairness": "✅ Found" if FAIRNESS_PATH.exists() else "❌ Missing",
-        "Giskard Quality": "✅ Found" if GISKARD_PATH.exists() else "❌ Missing",
-        "Security (Garak)": "✅ Found" if GARAK_PATH.exists() else "❌ Missing",
-    }
-
-    decision = "NEEDS REVIEW"
-    try:
-        if sbom_exists and accuracy is not None and float(accuracy) > 0.6:
-            decision = "APPROVED"
-    except Exception:
-        decision = "NEEDS REVIEW"
-
-    html = render_html(metrics, statuses, decision)
-    OUTPUT_HTML.write_text(html, encoding="utf-8")
-    print(f"Governance report written to {OUTPUT_HTML}")
+    print(f"Yonetisim raporu olusturuldu: {output_path}")
 
 
 if __name__ == "__main__":
