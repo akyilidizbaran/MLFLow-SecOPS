@@ -78,7 +78,7 @@ pipeline {
                 bat '''
                 echo Giskard ile model kalite testleri baslatiliyor...
                 call .venv\\Scripts\\activate
-                pip install "numpy<2.0" "griffe==0.48.0" scipy
+                pip install "numpy<2.0" "scipy<1.14" "griffe==0.48.0"
                 if not exist reports\\quality mkdir reports\\quality
                 python app/src/test_model.py
                 echo Giskard raporu reports/quality/giskard_report.html konumuna kaydedildi.
