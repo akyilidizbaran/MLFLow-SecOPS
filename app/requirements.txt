@@ -13,10 +13,10 @@ safety
 garak
 transformers
 torch
-cyclonedx-bom
-fairlearn
+# Critical Fixes for NumPy 2.0 Incompatibility
+numpy<2.0
+scipy<1.14
+griffe==0.48.0
 giskard
-cyclonedx-bom
-scipy
-griffe
 credoai-lens
+fairlearn
