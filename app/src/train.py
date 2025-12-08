@@ -6,6 +6,7 @@ import joblib
 import mlflow
 import pandas as pd
 import yaml
+from fairlearn.metrics import MetricFrame, selection_rate, count
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import accuracy_score, f1_score
 from sklearn.model_selection import train_test_split
@@ -17,6 +18,7 @@ from sklearn.model_selection import train_test_split
 # - Basit bir sınıflandırma modeli eğitmek
 # - Metrikleri hem metrics.json dosyasına hem de MLflow'a loglamak
 # - Eğitilen modeli dosyaya kaydetmek ve MLflow'a artefakt olarak yüklemek
+# - Fairlearn ile yaş bazlı adililik (fairness) analizi üretmek
 
 
 def load_params(params_path: Path) -> dict:
@@ -27,7 +29,6 @@ def load_params(params_path: Path) -> dict:
 
 
 def main() -> None:
-    # Çalışma dizini /app olarak ayarlandığı için yolları göreli kullanıyoruz.
     params_path = Path("params.yaml")
     data_path = Path("data/raw/kaggle_raw.csv")
     model_path = Path("models/model.pkl")
@@ -115,29 +116,53 @@ def main() -> None:
     joblib.dump(model, model_path)
     print("Eğitilen model 'models/model.pkl' dosyasına kaydedildi.")
 
+    # Fairlearn ile yaş temelli adililik analizi
+    # Age kolonuna göre 50 üzeri / 50 ve altı grupları oluşturuyoruz.
+    if "Age" in X_test.columns:
+        sensitive_feature = (X_test["Age"] > 50).astype(str)
+        sensitive_feature = sensitive_feature.replace({"True": "Over 50", "False": "50 or Younger"})
+
+        fairness_metrics = MetricFrame(
+            metrics={
+                "accuracy": accuracy_score,
+                "selection_rate": selection_rate,
+                "count": count,
+            },
+            y_true=y_test,
+            y_pred=y_pred,
+            sensitive_features=sensitive_feature,
+        )
+
+        fairness_dir = Path("reports/fairness")
+        fairness_dir.mkdir(parents=True, exist_ok=True)
+        fairness_report_path = fairness_dir / "fairness_report.txt"
+
+        with fairness_report_path.open("w", encoding="utf-8") as f:
+            f.write("Fairness Analizi - Yaş Bazlı Gruplar (Pima Indians Diabetes)\n")
+            f.write(f"Toplam doğruluk (accuracy): {accuracy:.4f}\n")
+            f.write("\nGrup bazlı sonuçlar (Age > 50 vs Age <= 50):\n")
+            f.write(fairness_metrics.by_group.to_string())
+            f.write("\n")
+
+        print("Fairness raporu 'reports/fairness/fairness_report.txt' dosyasına kaydedildi.")
+    else:
+        print("Uyarı: 'Age' kolonu bulunamadı, Fairlearn adililik analizi atlandı.")
+
     # MLflow ayarları
     tracking_uri = os.getenv("MLFLOW_TRACKING_URI", "http://mlflow:5000")
     mlflow.set_tracking_uri("file:./mlruns")
 
-    # Basit bir deney adı belirliyoruz.
     experiment_name = "demo-mlops-pipeline"
     mlflow.set_experiment(experiment_name)
 
-    # MLflow run başlatıyoruz.
     print(f"MLflow tracking URI: {tracking_uri}")
     print(f"MLflow deney adı: {experiment_name}")
 
     with mlflow.start_run():
-        # Hiperparametreleri logluyoruz.
         mlflow.log_params(train_params)
-
-        # Metrikleri logluyoruz.
         mlflow.log_metric("accuracy", accuracy)
         mlflow.log_metric("f1_score", f1)
-
-        # Model dosyasını artefakt olarak yüklüyoruz.
         mlflow.log_artifact(str(model_path), artifact_path="model")
-
         print("MLflow run başarıyla loglandı.")
 
 

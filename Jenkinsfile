@@ -34,9 +34,9 @@ pipeline {
                 bat '''
                 echo SBOM (Software Bill of Materials) olusturuluyor...
                 call .venv\\Scripts\\activate
-                if not exist reports mkdir reports
-                cyclonedx-py environment --output-format json > reports/bom.json
-                echo SBOM reports/bom.json dosyasina kaydedildi.
+                if not exist reports\\sbom mkdir reports\\sbom
+                cyclonedx-py environment --output-format json > reports/sbom/bom.json
+                echo SBOM reports/sbom/bom.json dosyasina kaydedildi.
                 '''
             }
         }
@@ -77,21 +77,21 @@ pipeline {
 
                 call .venv\\Scripts\\activate
                 if not exist .local\\share\\garak\\garak_runs\\reports mkdir .local\\share\\garak\\garak_runs\\reports
-                if not exist reports mkdir reports
+                if not exist reports\\security mkdir reports\\security
 
                 echo [GARAK] Yerel distilgpt2 modeli ile hizli tarama basliyor...
                 python -m garak --model_type huggingface --model_name distilgpt2 --probes encoding.InjectBase64 --generations 10 --report_prefix reports/garak_report || echo "Garak found vulnerabilities..."
 
                 echo [COPY] Garak raporlari workspace altina kopyalaniyor...
-                xcopy /s /y %USERPROFILE%\\.local\\share\\garak\\garak_runs\\reports\\*.* reports\\
+                xcopy /s /y %USERPROFILE%\\.local\\share\\garak\\garak_runs\\reports\\*.* reports\\security\\
 
                 echo [SUMMARY] Tarih/Saat ve DVC durum raporu hazirlaniyor...
-                echo Tarih/Saat: %DATE% %TIME% > reports/pipeline_summary.txt
-                echo DVC Status: >> reports/pipeline_summary.txt
-                dvc status >> reports/pipeline_summary.txt 2>&1
+                echo Tarih/Saat: %DATE% %TIME% > reports/security/pipeline_summary.txt
+                echo DVC Status: >> reports/security/pipeline_summary.txt
+                dvc status >> reports/security/pipeline_summary.txt 2>&1
 
-                echo [DEBUG] reports klasoru icerigi:
-                dir reports
+                echo [DEBUG] reports/security klasoru icerigi:
+                dir reports\\security
 
                 echo Scan complete.
                 '''
@@ -115,7 +115,7 @@ pipeline {
 
         stage('Artefaktları Arşivle') {
             steps {
-                archiveArtifacts artifacts: 'models/*.pkl, metrics.json, reports/*.*', fingerprint: true
+                archiveArtifacts artifacts: 'models/*.pkl, metrics.json, reports/**/*', fingerprint: true
             }
         }
 
@@ -172,3 +172,4 @@ pipeline {
         }
     }
 }
+
