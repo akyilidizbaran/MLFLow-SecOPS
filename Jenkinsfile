@@ -22,9 +22,12 @@ pipeline {
                 echo [PY] Sanal ortam aktif ediliyor...
                 call .venv\\Scripts\\activate
 
-                echo [PY] Bagimliliklar kuruluyor...
-                pip install --upgrade pip
-                pip install -r app\\requirements.txt
+                echo [PY] Yapi araclari guncelleniyor (pip, setuptools, wheel)...
+                python -m pip install --upgrade pip setuptools wheel
+
+                echo [PY] Bagimliliklar kuruluyor (Binary tercih ediliyor)...
+                REM --prefer-binary: Derleme hatasi almamak icin hazir paketleri zorla
+                pip install --prefer-binary -r app\\requirements.txt
                 '''
             }
         }
@@ -184,4 +187,3 @@ pipeline {
         }
     }
 }
-
