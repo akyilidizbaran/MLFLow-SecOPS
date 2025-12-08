@@ -1,5 +1,10 @@
 pipeline {
-    agent any
+    agent {
+        node {
+            label ''
+            customWorkspace 'C:/jw/mlops'
+        }
+    }
 
     environment {
         // MLflow server docker ortamında 5000 portunda çalışıyor
