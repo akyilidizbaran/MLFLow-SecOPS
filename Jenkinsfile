@@ -29,6 +29,18 @@ pipeline {
             }
         }
 
+        stage('Tedarik Zinciri Analizi (SBOM)') {
+            steps {
+                bat '''
+                echo SBOM (Software Bill of Materials) olusturuluyor...
+                call .venv\\Scripts\\activate
+                if not exist reports mkdir reports
+                cyclonedx-py environment --output-format json --outfile reports/bom.json
+                echo SBOM reports/bom.json dosyasina kaydedildi.
+                '''
+            }
+        }
+
         stage('DVC ile Kaggle Indir + Egitim') {
             steps {
                 withCredentials([
@@ -160,3 +172,4 @@ pipeline {
         }
     }
 }
+
