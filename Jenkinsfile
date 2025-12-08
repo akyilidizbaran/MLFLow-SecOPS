@@ -86,6 +86,8 @@ pipeline {
                 dir models
                 pip install "numpy<2.0" "scipy<1.14" "griffe==0.48.0"
                 if not exist reports\\quality mkdir reports\\quality
+                REM Fix Unicode errors (emojis) in Jenkins console
+                set PYTHONIOENCODING=utf-8
                 python app/src/test_model.py
                 echo Giskard raporu reports/quality/giskard_report.html konumuna kaydedildi.
                 '''
