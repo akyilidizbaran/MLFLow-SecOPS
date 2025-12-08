@@ -17,3 +17,5 @@ cyclonedx-bom
 fairlearn
 giskard
 cyclonedx-bom
+scipy
+griffe
